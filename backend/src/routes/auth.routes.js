@@ -1,9 +1,23 @@
-import { Router } from 'express';
+﻿import { Router } from 'express';
 import bcrypt from 'bcrypt';
+import jwt from 'jsonwebtoken';
+import { rateLimit } from 'express-rate-limit';
 import * as Usuario from '../models/usuario.js';
 import { validarCadastro } from '../middlewares/validarCadastro.js';
+import { autenticar } from '../middlewares/autenticar.js';
 
 const router = Router();
+
+// hash falso para gastar o mesmo tempo quando o e-mail nao existe
+const HASH_FALSO = bcrypt.hashSync('senha-falsa', 10);
+
+const limitarLogin = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 10,
+  standardHeaders: 'draft-8',
+  legacyHeaders: false,
+  message: { erro: 'Muitas tentativas de login. Tente novamente em alguns minutos.' },
+});
 
 router.post('/cadastro', validarCadastro, async (req, res, next) => {
   const { nome, email, cpf, senha } = req.body;
@@ -24,6 +38,43 @@ router.post('/cadastro', validarCadastro, async (req, res, next) => {
         campos: { [campo]: `Já existe um usuário com este ${campo === 'cpf' ? 'CPF' : 'e-mail'}.` },
       });
     }
+    return next(erro);
+  }
+});
+
+router.post('/login', limitarLogin, async (req, res, next) => {
+  const { email, senha } = req.body ?? {};
+  if (typeof email !== 'string' || typeof senha !== 'string' || !email.trim() || !senha) {
+    return res.status(400).json({
+      erro: 'Dados inválidos.',
+      campos: { email: 'Informe o e-mail.', senha: 'Informe a senha.' },
+    });
+  }
+  try {
+    const usuario = await Usuario.buscarPorEmail(email.trim().toLowerCase());
+    const senhaConfere = await bcrypt.compare(senha, usuario?.senha_hash ?? HASH_FALSO);
+    if (!usuario || !senhaConfere) {
+      return res.status(401).json({ erro: 'E-mail ou senha inválidos.' });
+    }
+    const token = jwt.sign({}, process.env.JWT_SECRET, {
+      subject: String(usuario.id),
+      expiresIn: '1h',
+    });
+    return res.json({
+      token,
+      usuario: { id: usuario.id, nome: usuario.nome, email: usuario.email },
+    });
+  } catch (erro) {
+    return next(erro);
+  }
+});
+
+router.get('/me', autenticar, async (req, res, next) => {
+  try {
+    const usuario = await Usuario.buscarPorId(req.usuarioId);
+    if (!usuario) return res.status(401).json({ erro: 'Token inválido ou expirado.' });
+    return res.json(usuario);
+  } catch (erro) {
     return next(erro);
   }
 });

@@ -36,3 +36,19 @@ export async function cadastrar({ nome, email, cpf, senhaHash }) {
     client.release();
   }
 }
+
+export async function buscarPorEmail(email) {
+  const { rows } = await pool.query(
+    'SELECT id, nome, email, senha_hash FROM usuarios WHERE email = $1',
+    [email]
+  );
+  return rows[0];
+}
+
+export async function buscarPorId(id) {
+  const { rows } = await pool.query(
+    'SELECT id, nome, email, cpf, criado_em FROM usuarios WHERE id = $1',
+    [id]
+  );
+  return rows[0];
+}
