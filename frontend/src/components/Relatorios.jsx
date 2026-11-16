@@ -2,6 +2,7 @@
 import { api, lerErro } from '../services/api.js';
 import { formatarMoeda } from '../services/validacoes.js';
 import Campo from './Campo.jsx';
+import Grafico from './Grafico.jsx';
 
 const pad = (n) => String(n).padStart(2, '0');
 const isoData = (d) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
@@ -130,8 +131,11 @@ export default function Relatorios() {
             <div><span>Saldo</span><strong>{formatarMoeda(fon.totais.saldo)}</strong></div>
           </div>
 
+          <Grafico titulo="Gráfico: saídas por categoria" cor="#dc2626" itens={cat.saidas.map((c) => ({ nome: c.nome, valor: c.total }))} />
           <TabelaCategorias titulo="Saídas por categoria" linhas={cat.saidas} />
           <TabelaCategorias titulo="Entradas por categoria" linhas={cat.entradas} />
+          <Grafico titulo="Gráfico: entradas por fonte" cor="#15803d" itens={fon.entradasPorFonte.map((f) => ({ nome: f.nome, valor: f.entradas }))} />
+          <Grafico titulo="Gráfico: saídas por destino" cor="#dc2626" itens={fon.saidasPorDestino.map((f) => ({ nome: f.nome, valor: f.saidas }))} />
           <TabelaFontes titulo="Entradas por fonte" linhas={fon.entradasPorFonte} campo="entradas" />
           <TabelaFontes titulo="Saídas por destino" linhas={fon.saidasPorDestino} campo="saidas" />
 
@@ -160,3 +164,4 @@ export default function Relatorios() {
     </section>
   );
 }
+
