@@ -22,6 +22,3 @@ app.use(tratarErros);
 
 const porta = process.env.PORT || 3000;
 app.listen(porta, () => console.log(`API rodando em http://localhost:${porta}`));
-
-
-
