@@ -53,3 +53,6 @@ button.perigo { background: #dc2626; }
 .valor-entrada { color: #15803d; }
 .valor-saida { color: #b91c1c; }
 .paginacao { display: flex; align-items: center; justify-content: center; gap: 12px; margin-top: 12px; }
+
+.cartao { margin-bottom: 24px; }
+.painel h4 { margin: 0 0 4px; }

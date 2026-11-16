@@ -6,6 +6,8 @@ const LINKS = [
   { para: '/categorias', texto: 'Categorias' },
   { para: '/fontes-destinos', texto: 'Fontes/Destinos' },
   { para: '/lancamentos', texto: 'Lançamentos' },
+  { para: '/relatorios', texto: 'Relatórios' },
+  { para: '/faturas', texto: 'Faturas' },
 ];
 
 export default function Layout() {
@@ -30,4 +32,5 @@ export default function Layout() {
     </div>
   );
 }
+
 
