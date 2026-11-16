@@ -6,6 +6,7 @@ import Cadastro from './components/Cadastro.jsx';
 import Dashboard from './components/Dashboard.jsx';
 import Categorias from './components/Categorias.jsx';
 import FontesDestinos from './components/FontesDestinos.jsx';
+import Lancamentos from './components/Lancamentos.jsx';
 
 export default function App() {
   return (
@@ -17,9 +18,11 @@ export default function App() {
           <Route path="/" element={<Dashboard />} />
           <Route path="/categorias" element={<Categorias />} />
           <Route path="/fontes-destinos" element={<FontesDestinos />} />
+          <Route path="/lancamentos" element={<Lancamentos />} />
         </Route>
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
 }
+

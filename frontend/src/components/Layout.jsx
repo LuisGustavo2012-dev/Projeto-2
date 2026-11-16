@@ -5,6 +5,7 @@ const LINKS = [
   { para: '/', texto: 'Resumo', exato: true },
   { para: '/categorias', texto: 'Categorias' },
   { para: '/fontes-destinos', texto: 'Fontes/Destinos' },
+  { para: '/lancamentos', texto: 'Lançamentos' },
 ];
 
 export default function Layout() {
@@ -29,3 +30,4 @@ export default function Layout() {
     </div>
   );
 }
+
