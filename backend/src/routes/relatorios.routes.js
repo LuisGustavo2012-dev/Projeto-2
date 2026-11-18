@@ -91,7 +91,7 @@ function montarCartao(cartao, lancamentos, hoje, meses) {
 
   let usadoCent = 0;
   for (const l of lancamentos) {
-    const f = calcularFatura(l.data, regra, l.parcelaAtual);
+    const f = calcularFatura(l.data, regra, 1);
     if (f.vencimento < hoje) continue;              // fatura ja vencida: nao conta mais
     const cent = Math.round(Number(l.valor) * 100);
     usadoCent += cent;                              // limite comprometido
@@ -155,3 +155,4 @@ router.get('/faturas', async (req, res, next) => {
 });
 
 export default router;
+

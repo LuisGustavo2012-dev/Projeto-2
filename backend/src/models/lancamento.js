@@ -18,6 +18,50 @@ export function dividirEmParcelas(totalCentavos, n) {
   return Array.from({ length: n }, (_, i) => (i === 0 ? base + resto : base));
 }
 
+const emReais = (centavos) => (centavos / 100).toFixed(2);
+
+// soma N meses a uma data AAAA-MM-DD, mantendo o dia (ajusta para o ultimo dia do mes se preciso)
+function somarMeses(iso, n) {
+  const [a, m, dia] = iso.split('-').map(Number);
+  const total = (m - 1) + n;
+  const ano = a + Math.floor(total / 12);
+  const mes = total % 12;
+  const ultimo = new Date(Date.UTC(ano, mes + 1, 0)).getUTCDate();
+  const diaFinal = Math.min(dia, ultimo);
+  return `${ano}-${String(mes + 1).padStart(2, '0')}-${String(diaFinal).padStart(2, '0')}`;
+}
+export async function criar(usuarioId, d) {
+  const partes = dividirEmParcelas(d.centavos, d.parcelas);
+  const grupo = d.parcelas > 1 ? randomUUID() : null;
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    const ids = [];
+    for (let i = 0; i < partes.length; i++) {
+      const { rows } = await client.query(
+        `INSERT INTO lancamentos
+           (usuario_id, tipo, descricao, valor, data, categoria_id, fonte_destino_id,
+            parcela_atual, total_parcelas, grupo_parcelamento)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING id`,
+        [usuarioId, d.tipo, d.descricao, emReais(partes[i]), somarMeses(d.data, i),
+         d.categoriaId, d.fonteDestinoId, i + 1, d.parcelas, grupo]
+      );
+      ids.push(rows[0].id);
+    }
+    await client.query('COMMIT');
+    const { rows } = await pool.query(
+      `${SELECT_BASE} WHERE l.usuario_id = $1 AND l.id = ANY($2) ORDER BY l.parcela_atual`,
+      [usuarioId, ids]
+    );
+    return rows;
+  } catch (erro) {
+    await client.query('ROLLBACK');
+    throw erro;
+  } finally {
+    client.release();
+  }
+}
+
 export async function buscar(usuarioId, id) {
   const { rows } = await pool.query(
     `${SELECT_BASE} WHERE l.id = $1 AND l.usuario_id = $2`,
@@ -96,5 +140,4 @@ export async function excluir(usuarioId, atual, todasParcelas) {
     );
   }
 }
-
 
